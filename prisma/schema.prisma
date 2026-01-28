@@ -1,0 +1,561 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========== CORE USER & AUTHENTICATION ==========
+enum UserRole {
+  ATHLETE
+  COACH
+  ACADEMY
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  PENDING
+  SUSPENDED
+  VERIFIED
+}
+
+model User {
+  id              String      @id @default(cuid())
+  email           String      @unique
+  password        String?
+  name            String
+  role            UserRole
+  status          UserStatus  @default(PENDING)
+  emailVerified   DateTime?
+  image           String?
+  phone           String?
+  otpHash         String?
+  otpExpiry       DateTime?
+  
+  // Profile relationships
+  athleteProfile  AthleteProfile?
+  coachProfile    CoachProfile?
+  academyProfile  AcademyProfile?
+  
+  // Connections
+  sentConnections     Connection[] @relation("SentConnections")
+  receivedConnections Connection[] @relation("ReceivedConnections")
+  
+  // Posts & Interactions
+  posts            Post[]
+  likes            Like[]
+  comments         Comment[]
+  notifications    Notification[]
+  
+  // Events & Applications
+  eventApplications EventApplication[]
+  createdEvents     Event[]
+  
+  // Timestamps
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  // Indexes
+  @@index([email])
+  @@index([role])
+  @@index([status])
+
+  // Backward relations
+  certifications      Certification[]
+  reviewedApplications EventApplication[] @relation("ReviewedApplications")
+  searchPreference    SearchPreference?
+  auditLogs           AuditLog[]
+}
+
+// ========== ATHLETE PROFILE ==========
+model AthleteProfile {
+  id              String      @id @default(cuid())
+  userId          String      @unique
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Personal Info
+  bio             String?
+  dateOfBirth     DateTime?
+  gender          String?
+  nationality     String?
+  
+  // Sports Details
+  primarySport    String
+  secondarySports String[]  // Array of sports
+  positions       String[]  // Array of positions (e.g., ["Striker", "Forward"])
+  
+  // Physical Attributes
+  height          Int?      // in cm
+  weight          Int?      // in kg
+  
+  // Location
+  city            String?
+  state           String?
+  country         String?
+  
+  // Career Details
+  experienceLevel String?    // "Beginner", "Amateur", "Semi-Pro", "Professional"
+  yearsPlaying    Int?
+  
+  // Achievements
+  achievements    Achievement[]
+  
+  // Statistics
+  matchStats      MatchStat[]
+  
+  // Career History
+  pastTeams       PastTeam[]
+  tournaments     Tournament[]
+  
+  // Social & Media
+  socialLinks     Json?     // JSON object for social media links
+  
+  // Verification
+  isVerified      Boolean   @default(false)
+  verificationDocuments Json?  // JSON array of document URLs
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([primarySport])
+  @@index([city, country])
+  @@index([experienceLevel])
+}
+
+// ========== COACH PROFILE ==========
+model CoachProfile {
+  id              String      @id @default(cuid())
+  userId          String      @unique
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Professional Info
+  bio             String?
+  specialization  String[]    // ["Fitness", "Technical", "Tactical", "Goalkeeping"]
+  coachingStyle   String?
+  yearsExperience Int?
+  
+  // Qualifications
+  qualifications  String[]    // ["UEFA A", "NSCA Certified", etc.]
+  
+  // Location
+  city            String?
+  state           String?
+  country         String?
+  
+  // Availability
+  isAvailable     Boolean     @default(true)
+  availability    Json?       // JSON structure for schedule
+  
+  // Social & Media
+  socialLinks     Json?
+  
+  // Verification
+  isVerified      Boolean     @default(false)
+  
+  // Timestamps
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+// ========== ACADEMY/ORGANIZATION PROFILE ==========
+model AcademyProfile {
+  id              String      @id @default(cuid())
+  userId          String      @unique
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Organization Info
+  name            String
+  description     String?
+  type            String      // "Academy", "Club", "University", "Organization"
+  foundedYear     Int?
+  
+  // Sports Offered
+  sports          String[]
+  ageGroups       String[]    // ["U-12", "U-16", "U-19", "Senior"]
+  
+  // Location
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  facilities      String[]    // ["Gym", "Pool", "Track", "Court"]
+  
+  // Contact & Social
+  website         String?
+  contactEmail    String?
+  contactPhone    String?
+  socialLinks     Json?
+  
+  // Verification
+  isVerified      Boolean     @default(false)
+  verificationStatus String?   // "Pending", "Verified", "Rejected"
+  
+  // Team Members/Staff
+  staffMembers    Json?       // JSON array of staff
+  
+  // Timestamps
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@index([city, country])
+  @@index([type])
+  @@index([isVerified])
+}
+
+// ========== ACHIEVEMENTS & CERTIFICATIONS ==========
+model Achievement {
+  id              String      @id @default(cuid())
+  athleteId       String
+  athlete         AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  
+  title           String
+  description     String?
+  event           String?
+  year            Int
+  category        String?     // "Tournament", "Award", "Record", "Selection"
+  proofUrl        String?     // URL to certificate/image
+  
+  createdAt       DateTime    @default(now())
+}
+
+model Certification {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title           String
+  issuingBody     String
+  issueDate       DateTime
+  expiryDate      DateTime?
+  credentialId    String?
+  credentialUrl   String?
+  
+  verified        Boolean     @default(false)
+  
+  createdAt       DateTime    @default(now())
+}
+
+// ========== STATISTICS & PERFORMANCE ==========
+model MatchStat {
+  id              String      @id @default(cuid())
+  athleteId       String
+  athlete         AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  
+  matchType       String      // "Friendly", "League", "Tournament"
+  competition     String?
+  date            DateTime
+  opponent        String?
+  
+  // Performance Metrics
+  minutesPlayed   Int?
+  goals           Int?
+  assists         Int?
+  saves           Int?        // For goalkeepers
+  yellowCards     Int?
+  redCards        Int?
+  
+  // Position-specific stats
+  position        String?
+  
+  // Additional metrics
+  additionalStats Json?       // JSON for sport-specific stats
+  
+  createdAt       DateTime    @default(now())
+}
+
+// ========== CAREER HISTORY ==========
+model PastTeam {
+  id              String      @id @default(cuid())
+  athleteId       String
+  athlete         AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  
+  teamName        String
+  teamType        String      // "Club", "School", "National"
+  position        String?
+  fromDate        DateTime
+  toDate          DateTime?
+  achievements    String?
+  
+  createdAt       DateTime    @default(now())
+}
+
+model Tournament {
+  id              String      @id @default(cuid())
+  athleteId       String
+  athlete         AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  
+  name            String
+  organizer       String?
+  location        String?
+  date            DateTime
+  result          String?     // "Winner", "Runner-up", "Semi-finalist"
+  performance     String?
+  
+  createdAt       DateTime    @default(now())
+}
+
+// ========== CONNECTIONS & NETWORKING ==========
+enum ConnectionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  BLOCKED
+}
+
+model Connection {
+  id              String            @id @default(cuid())
+  senderId        String
+  receiverId      String
+  status          ConnectionStatus  @default(PENDING)
+  message         String?
+  
+  sender          User              @relation("SentConnections", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver        User              @relation("ReceivedConnections", fields: [receiverId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@unique([senderId, receiverId])
+  @@index([senderId, status])
+  @@index([receiverId, status])
+}
+
+// ========== EVENTS & TRIALS ==========
+enum EventType {
+  TRIAL
+  TOURNAMENT
+  TRAINING_CAMP
+  WORKSHOP
+  SCOUTING_EVENT
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+model Event {
+  id              String          @id @default(cuid())
+  organizerId     String
+  organizer       User            @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  
+  // Event Details
+  title           String
+  description     String?
+  type            EventType
+  status          EventStatus     @default(DRAFT)
+  
+  // Sports & Requirements
+  sport           String
+  positions       String[]
+  ageRangeMin     Int?
+  ageRangeMax     Int?
+  gender          String?         // "Male", "Female", "Mixed"
+  skillLevel      String?         // "Beginner", "Intermediate", "Advanced"
+  
+  // Location & Timing
+  venue           String?
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  startDate       DateTime
+  endDate         DateTime
+  registrationDeadline DateTime?
+  
+  // Capacity & Fees
+  maxParticipants Int?
+  feeAmount       Decimal?        @db.Decimal(10, 2)
+  feeCurrency     String?         @default("USD")
+  
+  // Additional Info
+  requirements    String[]        // ["Bring ID", "Medical Certificate"]
+  equipmentNeeded String[]        // ["Cleats", "Water Bottle"]
+  
+  // Media
+  images          String[]        // Array of image URLs
+  
+  // Applications
+  applications    EventApplication[]
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  publishedAt     DateTime?
+  
+  @@index([organizerId])
+  @@index([sport, city])
+  @@index([type, status])
+  @@index([startDate])
+}
+
+// ========== EVENT APPLICATIONS ==========
+enum ApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  WAITLISTED
+  WITHDRAWN
+}
+
+model EventApplication {
+  id              String            @id @default(cuid())
+  eventId         String
+  applicantId     String
+  
+  event           Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  applicant       User              @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  
+  status          ApplicationStatus @default(PENDING)
+  message         String?           // Cover letter/message from applicant
+  notes           String?           // Internal notes from organizer
+  
+  // Additional application data
+  applicationData Json?             // JSON with additional form data
+  
+  reviewedById    String?
+  reviewedBy      User?             @relation("ReviewedApplications", fields: [reviewedById], references: [id], onDelete: Cascade)
+  reviewedAt      DateTime?
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@unique([eventId, applicantId])
+  @@index([applicantId, status])
+  @@index([eventId, status])
+}
+
+// ========== FEED & SOCIAL FEATURES ==========
+model Post {
+  id              String      @id @default(cuid())
+  authorId        String
+  author          User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  content         String
+  mediaUrls       String[]    // Array of image/video URLs
+  
+  // Privacy
+  visibility      String      @default("PUBLIC") // "PUBLIC", "CONNECTIONS", "PRIVATE"
+  
+  // Engagement
+  likes           Like[]
+  comments        Comment[]
+  
+  // Timestamps
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model Like {
+  id              String      @id @default(cuid())
+  userId          String
+  postId          String
+  
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post            Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime    @default(now())
+  
+  @@unique([userId, postId])
+}
+
+model Comment {
+  id              String      @id @default(cuid())
+  userId          String
+  postId          String
+  parentId        String?     // For nested comments
+  
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post            Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent          Comment?    @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies         Comment[]   @relation("CommentReplies")
+  
+  content         String
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@index([postId])
+  @@index([userId])
+}
+
+// ========== NOTIFICATIONS ==========
+enum NotificationType {
+  CONNECTION_REQUEST
+  CONNECTION_ACCEPTED
+  EVENT_INVITATION
+  APPLICATION_UPDATE
+  NEW_MESSAGE
+  SYSTEM
+}
+
+model Notification {
+  id              String            @id @default(cuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type            NotificationType
+  title           String
+  message         String
+  data            Json?             // Additional data
+  
+  read            Boolean           @default(false)
+  readAt          DateTime?
+  
+  relatedId       String?           // ID of related entity (connection, event, etc.)
+  
+  createdAt       DateTime          @default(now())
+  
+  @@index([userId, read])
+  @@index([createdAt])
+}
+
+// ========== SEARCH & PREFERENCES ==========
+model SearchPreference {
+  id              String      @id @default(cuid())
+  userId          String      @unique
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Search preferences
+  preferredSports String[]
+  locations       String[]
+  ageRange        Int[]       // [min, max]
+  
+  // Notification preferences
+  emailNotifications Boolean  @default(true)
+  pushNotifications  Boolean  @default(true)
+  
+  updatedAt       DateTime    @updatedAt
+}
+
+// ========== AUDIT LOG ==========
+model AuditLog {
+  id              String      @id @default(cuid())
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  action          String
+  entityType      String      // "User", "Event", "Application"
+  entityId        String?
+  changes         Json?       // JSON diff of changes
+  
+  ipAddress       String?
+  userAgent       String?
+  
+  createdAt       DateTime    @default(now())
+  
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
