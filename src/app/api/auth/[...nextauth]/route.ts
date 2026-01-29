@@ -32,9 +32,7 @@ export const authOptions = {
                     throw new Error("Invalid credentials");
                 }
 
-                if (!user.emailVerified) {
-                    throw new Error("UNVERIFIED");
-                }
+
 
                 return {
                     id: user.id,
@@ -42,6 +40,7 @@ export const authOptions = {
                     email: user.email,
                     role: user.role,
                     image: user.image,
+                    onboardingCompleted: user.onboardingCompleted,
                 };
             },
         }),
@@ -51,6 +50,7 @@ export const authOptions = {
             if (user) {
                 token.role = user.role;
                 token.id = user.id;
+                token.onboardingCompleted = user.onboardingCompleted;
             }
             return token;
         },
@@ -58,6 +58,7 @@ export const authOptions = {
             if (session?.user) {
                 session.user.role = token.role;
                 session.user.id = token.id;
+                session.user.onboardingCompleted = token.onboardingCompleted;
             }
             return session;
         },

@@ -48,14 +48,7 @@ export default function SignupPage() {
         throw new Error(result.message || "Registration failed");
       }
 
-      // Trigger OTP email
-      await fetch('/api/auth/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: data.email }),
-      });
-
-      router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
+      router.push("/onboarding");
       router.refresh();
     } catch (err: any) {
       setError(err.message);

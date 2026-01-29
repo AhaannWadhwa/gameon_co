@@ -31,9 +31,8 @@ model User {
   status          UserStatus  @default(PENDING)
   emailVerified   DateTime?
   image           String?
-  phone           String?
-  otpHash         String?
-  otpExpiry       DateTime?
+  interests       String[]
+  onboardingCompleted Boolean @default(false)
   
   // Profile relationships
   athleteProfile  AthleteProfile?

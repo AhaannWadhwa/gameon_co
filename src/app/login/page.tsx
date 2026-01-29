@@ -44,16 +44,6 @@ export default function LoginPage() {
         if (result.error === "CredentialsSignin") {
             throw new Error("Invalid email or password");
         }
-        if (result.error === "UNVERIFIED") {
-            // Trigger OTP send before redirecting
-            await fetch('/api/auth/otp/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: data.email }),
-            });
-            router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
-            return;
-        }
         throw new Error(result.error);
       }
 

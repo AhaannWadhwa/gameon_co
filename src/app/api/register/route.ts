@@ -36,7 +36,8 @@ export async function POST(req: Request) {
         email,
         password: hashedPassword,
         role,
-        status: "ACTIVE", // Auto-activate for now
+        status: "ACTIVE",
+        emailVerified: new Date(),
       },
     });
 
