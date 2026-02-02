@@ -27,6 +27,8 @@ model User {
   email           String      @unique
   password        String?
   name            String
+  phone           String?
+  dateOfBirth     DateTime?
   role            UserRole
   status          UserStatus  @default(PENDING)
   emailVerified   DateTime?
@@ -440,6 +442,7 @@ model Post {
   
   content         String
   mediaUrls       String[]    // Array of image/video URLs
+  sportsTags      String[]    @default([]) // Sports related to this post
   
   // Privacy
   visibility      String      @default("PUBLIC") // "PUBLIC", "CONNECTIONS", "PRIVATE"

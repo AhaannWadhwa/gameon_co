@@ -10,10 +10,20 @@ import { signIn } from "next-auth/react";
 
 const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address").refine((email) => email.endsWith("@gmail.com"), {
-    message: "Only @gmail.com addresses are allowed",
-  }),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().optional().refine(
+    (val) => !val || /^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/.test(val),
+    { message: "Invalid phone number format" }
+  ),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  dateOfBirth: z.string().min(1, "Date of birth is required").refine(
+    (val) => {
+      const date = new Date(val);
+      const now = new Date();
+      return date < now;
+    },
+    { message: "Date of birth must be in the past" }
+  ),
   role: z.enum(["ATHLETE", "COACH", "ACADEMY"]),
 });
 
@@ -48,7 +58,7 @@ export default function SignupPage() {
         throw new Error(result.message || "Registration failed");
       }
 
-      router.push("/onboarding");
+      router.push("/sports-preferences");
       router.refresh();
     } catch (err: any) {
       setError(err.message);
@@ -111,6 +121,21 @@ export default function SignupPage() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Phone Number (Optional)
+                </label>
+                <input
+                  {...register("phone")}
+                  type="tel"
+                  className="mt-1 block w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-gameon-blue-500 outline-none transition-all"
+                  placeholder="+1 234 567 8900"
+                />
+                {errors.phone && (
+                  <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Password
                 </label>
                 <input
@@ -122,6 +147,22 @@ export default function SignupPage() {
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-600">
                     {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Date of Birth
+                </label>
+                <input
+                  {...register("dateOfBirth")}
+                  type="date"
+                  className="mt-1 block w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-gameon-blue-500 outline-none transition-all"
+                />
+                {errors.dateOfBirth && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.dateOfBirth.message}
                   </p>
                 )}
               </div>
