@@ -1,91 +1,114 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { signupSchema } from "@/lib/validation/auth";
+import {
+  formatErrorResponse,
+  logError,
+  ConflictError,
+  ValidationError,
+} from "@/lib/errors";
 import { z } from "zod";
-
-const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  dateOfBirth: z.string(),
-  role: z.enum(["ATHLETE", "COACH", "ACADEMY"]),
-});
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, phone, password, dateOfBirth, role } = registerSchema.parse(body);
 
+    // Validate input using shared schema
+    const validatedData = signupSchema.parse(body);
+    const { name, email, phone, password, dateOfBirth, role } = validatedData;
+
+    // Check for existing user
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { message: "User with this email already exists" },
-        { status: 409 }
-      );
+      throw new ConflictError("An account with this email already exists");
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        phone: phone || null,
-        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-        password: hashedPassword,
-        role,
-        status: "ACTIVE",
-        emailVerified: new Date(),
-      },
+    // Create user and profile in a transaction (atomic operation)
+    const user = await prisma.$transaction(async (tx) => {
+      // Create user
+      const newUser = await tx.user.create({
+        data: {
+          name,
+          email,
+          phone: phone || null,
+          dateOfBirth: new Date(dateOfBirth),
+          password: hashedPassword,
+          role,
+          status: "ACTIVE",
+          emailVerified: new Date(), // Auto-verify for now
+        },
+      });
+
+      // Create role-specific profile
+      if (role === "ATHLETE") {
+        await tx.athleteProfile.create({
+          data: {
+            userId: newUser.id,
+            primarySport: "Soccer", // Default, user will update in onboarding
+            secondarySports: [],
+            positions: [],
+          },
+        });
+      } else if (role === "COACH") {
+        await tx.coachProfile.create({
+          data: {
+            userId: newUser.id,
+            specialization: [],
+            qualifications: [],
+          },
+        });
+      } else if (role === "ACADEMY") {
+        await tx.academyProfile.create({
+          data: {
+            userId: newUser.id,
+            name: newUser.name,
+            type: "Academy",
+            sports: [],
+            ageGroups: [],
+            facilities: [],
+          },
+        });
+      }
+
+      return newUser;
     });
 
-    // Create empty profile based on role
-    if (role === 'ATHLETE') {
-        await prisma.athleteProfile.create({ data: { userId: user.id, primarySport: "Soccer", secondarySports: [], positions: [] } });
-    } else if (role === 'COACH') {
-        await prisma.coachProfile.create({ data: { userId: user.id, specialization: [], qualifications: [] } });
-    } else if (role === 'ACADEMY') {
-        await prisma.academyProfile.create({ data: { userId: user.id, name: user.name, type: "Academy", sports: [], ageGroups: [], facilities: [] } });
-    }
+    console.log(`✅ New user registered: ${user.email} (${user.role})`);
 
     // Return user without password
     const { password: _, ...userWithoutPassword } = user;
 
     return NextResponse.json(
-      { message: "User registered successfully", user: userWithoutPassword },
+      {
+        success: true,
+        message: "Account created successfully",
+        user: userWithoutPassword,
+      },
       { status: 201 }
     );
   } catch (error) {
-    console.error("[REGISTER_API_ERROR]", error);
+    logError(error, "REGISTER_API");
 
+    // Handle Zod validation errors
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { message: "Validation error", errors: (error as z.ZodError).errors },
-        { status: 400 }
+      const validationError = new ValidationError(
+        "Please check your input and try again"
       );
+      const errorResponse = formatErrorResponse(validationError);
+      return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    if ((error as any).code === 'P2002') {
-        return NextResponse.json(
-            { message: "User with this email already exists" },
-            { status: 409 }
-        );
-    }
-
-    if ((error as any).code === 'P1001') {
-        return NextResponse.json(
-            { message: "Database connection failed. Please check if the database is running." },
-            { status: 503 } // Service Unavailable
-        );
-    }
-
-    return NextResponse.json(
-      { message: (error as Error).message || "Internal Server Error" },
-      { status: 500 }
-    );
+    // Handle all other errors with formatted response
+    const errorResponse = formatErrorResponse(error);
+    return NextResponse.json(errorResponse, {
+      status: errorResponse.statusCode,
+    });
   }
 }

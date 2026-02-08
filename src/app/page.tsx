@@ -10,52 +10,69 @@ export default function Home() {
       {/* Navigation */}
       <Navbar />
 
-      {/* Hero Section */}
+      {/* Hero Section with Skiing Background */}
       <main>
-        <section className="pt-32 pb-24 lg:pt-48 lg:pb-32 overflow-hidden relative bg-white dark:bg-slate-900 dark:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] dark:from-slate-900 dark:via-[#0B1120] dark:to-slate-900">
-           {/* Background Decorative Elements */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-200/40 dark:bg-gameon-blue-500/20 rounded-full blur-[120px] pointer-events-none mix-blend-multiply dark:mix-blend-screen opacity-50 dark:opacity-40" />
-          <div className="absolute bottom-0 right-0 w-[800px] h-[600px] bg-indigo-200/40 dark:bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none mix-blend-multiply dark:mix-blend-screen opacity-50 dark:opacity-30" />
+        <section className="relative min-h-[90vh] overflow-hidden">
+          {/* Theme-Matching Gradient Background */}
+          <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-slate-100 via-blue-50 to-slate-50 dark:from-[#0B1120] dark:via-[#0F1828] dark:to-[#151B2B]" />
+        
 
-          <div className="container-custom relative z-10 flex flex-col items-center text-center">
-            
-            <div className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-sm font-medium text-blue-700 dark:border-gameon-blue-500/30 dark:bg-gameon-blue-500/10 dark:text-gameon-blue-300 mb-8 backdrop-blur-sm shadow-sm dark:shadow-[0_0_15px_rgba(37,99,235,0.2)]">
-              <span className="flex h-2 w-2 rounded-full bg-blue-500 dark:bg-gameon-blue-400 mr-2 animate-pulse dark:shadow-[0_0_10px_#60A5FA]"></span>
-              The #1 Network for Sports Professionals
-            </div>
-            
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 dark:text-white mb-8 leading-[1.1] sm:leading-[1.1] max-w-4xl mx-auto drop-shadow-sm">
-              Elevate Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-gameon-blue-400 dark:to-indigo-400 relative whitespace-nowrap">
-                Game
-              </span>
-              <br />
-              Build Your Future.
-            </h1>
-            
-            <p className="text-xl text-slate-600 dark:text-slate-300 mb-10 leading-relaxed max-w-2xl mx-auto font-light">
-              Connect with elite athletes, visionary coaches, and top-tier organizations. Showcase your talent, find opportunities, and level up your career.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-              <Link href="/signup" className="btn-primary w-full sm:w-auto text-lg px-8 py-4 min-w-[180px] shadow-lg shadow-blue-500/20 dark:shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-blue-500/30 dark:hover:shadow-[0_0_30px_rgba(37,99,235,0.6)]">
-                Get Started Now
-              </Link>
-              <Link href="#demo" className="btn-secondary w-full sm:w-auto text-lg px-8 py-4 flex items-center justify-center gap-2 group min-w-[180px] bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-white/5 dark:border-white/10 dark:text-white dark:hover:bg-white/10">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-blue-600 dark:text-gameon-blue-400 group-hover:scale-110 transition-transform">
-                  <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
-                </svg>
-                Watch Demo
-              </Link>
-            </div>
-            
-            {/* Social Proof Text */}
-            <div className="mt-12 flex flex-col items-center justify-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-               <div className="flex -space-x-3">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="h-10 w-10 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-800 shadow-lg" />
-                ))}
+          {/* Content Container - Left Aligned */}
+          <div className="relative z-10 min-h-[90vh] flex items-center">
+            <div className="w-full max-w-[1280px] mx-auto px-6 sm:px-8 lg:px-12 py-20 lg:py-32">
+              <div className="max-w-2xl">
+                {/* Badge */}
+                <div className="inline-flex items-center rounded-full border border-slate-300 dark:border-white/30 bg-white/80 dark:bg-white/10 px-4 py-1.5 text-sm font-medium text-slate-700 dark:text-white mb-8 backdrop-blur-md shadow-lg">
+                  <span className="flex h-2 w-2 rounded-full bg-blue-600 dark:bg-white mr-2 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)] dark:shadow-[0_0_10px_#fff]"></span>
+                  The #1 Network for Sports Professionals
+                </div>
+                
+                {/* Headline */}
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 dark:text-white mb-8 leading-[1.1] drop-shadow-lg">
+                  Elevate Your{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300 relative whitespace-nowrap">
+                    Game
+                  </span>
+                  <br />
+                  Build Your Future.
+                </h1>
+                
+                {/* Subtext */}
+                <p className="text-xl sm:text-2xl text-slate-700 dark:text-white/95 mb-10 leading-relaxed font-light">
+                  Connect with elite athletes, visionary coaches, and top-tier organizations. Showcase your talent, find opportunities, and level up your career.
+                </p>
+                
+                {/* CTA Buttons */}
+                <div className="flex flex-col sm:flex-row items-start gap-4">
+                  <Link 
+                    href="/signup" 
+                    className="btn-primary w-full sm:w-auto text-lg px-8 py-4 min-w-[200px] shadow-2xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 font-semibold"
+                  >
+                    Get Started Now
+                  </Link>
+                  <Link 
+                    href="#demo" 
+                    className="btn-secondary w-full sm:w-auto text-lg px-8 py-4 flex items-center justify-center gap-2 group min-w-[200px] bg-slate-200/80 dark:bg-white/10 border-slate-300 dark:border-white/30 text-slate-900 dark:text-white hover:bg-slate-300/80 dark:hover:bg-white/20 backdrop-blur-md font-semibold shadow-xl"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 group-hover:scale-110 transition-transform">
+                      <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+                    </svg>
+                    Watch Demo
+                  </Link>
+                </div>
+                
+                {/* Social Proof */}
+                <div className="mt-12 flex items-center gap-4 text-sm text-slate-700 dark:text-white/90">
+                  <div className="flex -space-x-3">
+                    {[1,2,3,4].map(i => (
+                      <div key={i} className="h-10 w-10 rounded-full border-2 border-slate-300 dark:border-white/50 bg-slate-300/50 dark:bg-white/20 shadow-lg backdrop-blur-sm" />
+                    ))}
+                  </div>
+                  <p>
+                    Join <span className="font-bold text-slate-900 dark:text-white">2,000+</span> athletes and coaches
+                  </p>
+                </div>
               </div>
-              <p>Join <span className="font-bold text-slate-900 dark:text-white">2,000+</span> athletes and coaches</p>
             </div>
           </div>
         </section>
