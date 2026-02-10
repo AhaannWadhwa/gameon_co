@@ -45,7 +45,7 @@ export default function Home() {
                 {/* CTA Buttons */}
                 <div className="flex flex-col sm:flex-row items-start gap-4">
                   <Link 
-                    href="/signup" 
+                    href="/login" 
                     className="btn-primary w-full sm:w-auto text-lg px-8 py-4 min-w-[200px] shadow-2xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 font-semibold"
                   >
                     Get Started Now
@@ -97,7 +97,7 @@ export default function Home() {
                    </div>
                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Athletes</h3>
                    <p className="text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">Create a verified digital profile. Post highlights, track stats, and get discovered by scouts globally.</p>
-                   <Link href="/athletes" className="text-gameon-blue-600 font-medium flex items-center hover:gap-2 transition-all">
+                   <Link href="/login?mode=signup" className="text-gameon-blue-600 font-medium flex items-center hover:gap-2 transition-all">
                      Build Your Profile <span className="ml-1">&rarr;</span>
                    </Link>
                 </div>
@@ -111,7 +111,7 @@ export default function Home() {
                    </div>
                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Coaches & Scouts</h3>
                    <p className="text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">Access a database of verified talent. Filter by position, stats, and video analysis to find your next star.</p>
-                   <Link href="/scouts" className="text-indigo-600 font-medium flex items-center hover:gap-2 transition-all">
+                   <Link href="/login?mode=signup" className="text-indigo-600 font-medium flex items-center hover:gap-2 transition-all">
                      Start Scouting <span className="ml-1">&rarr;</span>
                    </Link>
                 </div>
@@ -125,7 +125,7 @@ export default function Home() {
                    </div>
                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Organizations</h3>
                    <p className="text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">Manage rosters, schedules, and player development with enterprise-grade tools built for sports.</p>
-                   <Link href="/organizations" className="text-emerald-600 font-medium flex items-center hover:gap-2 transition-all">
+                   <Link href="/login?mode=signup" className="text-emerald-600 font-medium flex items-center hover:gap-2 transition-all">
                      Manage Organization <span className="ml-1">&rarr;</span>
                    </Link>
                 </div>
@@ -239,7 +239,7 @@ export default function Home() {
               <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-8">Ready to Level Up?</h2>
               <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">Join the fastest-growing professional network for sports. Create your profile today and start building your legacy.</p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                 <Link href="/signup" className="btn-primary bg-white text-slate-900 hover:bg-slate-100 text-lg px-10 py-4 w-full sm:w-auto">
+                 <Link href="/login" className="btn-primary bg-white text-slate-900 hover:bg-slate-100 text-lg px-10 py-4 w-full sm:w-auto">
                     Get Started Now
                  </Link>
                  <Link href="#contact" className="px-8 py-4 text-white/80 hover:text-white font-medium transition-colors">

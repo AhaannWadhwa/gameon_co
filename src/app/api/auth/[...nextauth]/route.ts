@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
@@ -11,6 +12,17 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
 
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
+    }),
     CredentialsProvider({
       name: "Credentials",
 
@@ -78,11 +90,41 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account, profile }) {
+      // For Google OAuth, check if user needs to select role
+      if (account?.provider === "google") {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email! },
+        });
+
+        // If new Google user, create with default role ATHLETE
+        // User will be redirected to onboarding to select proper role
+        if (!existingUser) {
+          // The adapter will create the user, but we'll update it with default role
+          return true;
+        }
+      }
+      return true;
+    },
+
+    async jwt({ token, user, account, trigger }) {
+      // Initial sign in
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.onboardingCompleted = user.onboardingCompleted;
+      }
+
+      // For OAuth users on first login, fetch from database to get role
+      if (account?.provider === "google" && !token.role) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email! },
+        });
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.role = dbUser.role;
+          token.onboardingCompleted = dbUser.onboardingCompleted;
+        }
       }
 
       return token;

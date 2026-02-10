@@ -150,14 +150,9 @@ export default function Navbar() {
             </div>
           ) : (
             <>
-              <Link
-                href="/login"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground hidden sm:block"
-              >
+              {/* Redundant Log in text link removed */}
+              <Link href="/login" className="btn-primary">
                 Log in
-              </Link>
-              <Link href="/signup" className="btn-primary">
-                Sign up
               </Link>
             </>
           )}
