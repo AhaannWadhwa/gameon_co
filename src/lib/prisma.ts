@@ -4,50 +4,10 @@ import { PrismaClient } from "@prisma/client";
 const isDevelopment = process.env.NODE_ENV !== "production";
 const isProduction = process.env.NODE_ENV === "production";
 
-console.log(`🔌 Prisma initializing in ${process.env.NODE_ENV || 'development'} mode`);
+// Note: Validation happens at PrismaClient instantiation time, not at module import time
+// This prevents errors from showing in the browser during page load
 
-// ========== VALIDATE DATABASE_URL ==========
-if (!process.env.DATABASE_URL) {
-  const errorMsg = 
-    "❌ DATABASE_URL environment variable is not set.\n" +
-    "For local development: Check .env.local\n" +
-    "For production (Vercel): Set in environment variables dashboard";
-  console.error(errorMsg);
-  throw new Error(errorMsg);
-}
-
-// Log DATABASE_URL presence (not value) for debugging
-const dbUrl = process.env.DATABASE_URL;
-const dbHost = dbUrl.split("@")[1]?.split("/")[0] || "unknown";
-console.log(`📊 Database host: ${dbHost}`);
-console.log(`🔗 DATABASE_URL present: ✅`);
-console.log(`🔗 DIRECT_URL present: ${process.env.DIRECT_URL ? '✅' : '⚠️  (optional)'}`);
-
-// ========== PRODUCTION VALIDATIONS ==========
-if (isProduction) {
-  // Prevent localhost in production
-  if (dbUrl.includes("localhost") || dbUrl.includes("127.0.0.1")) {
-    const errorMsg = 
-      "❌ CRITICAL: Production is using localhost database!\n" +
-      `Current host: ${dbHost}\n` +
-      "Action required: Set DATABASE_URL in Vercel to your cloud database";
-    console.error(errorMsg);
-    throw new Error(errorMsg);
-  }
-
-  // Warn about connection pooling
-  if (!dbUrl.includes("pgbouncer") && !dbUrl.includes("pooler")) {
-    console.warn(
-      "⚠️  WARNING: Production DATABASE_URL may not be using connection pooling.\n" +
-      "   For Vercel/serverless, use pooled connection string:\n" +
-      "   - Supabase: Use 'Connection pooling' URL (port 6543)\n" +
-      "   - Neon: Use 'Pooled connection'\n" +
-      "   - Recommended parameters: ?pgbouncer=true&connection_limit=1"
-    );
-  }
-
-  console.log("✅ Production database configuration validated");
-}
+// Production validations are now done lazily at runtime in API routes
 
 // ========== PRISMA CLIENT CONFIGURATION ==========
 const globalForPrisma = globalThis as unknown as {
@@ -121,21 +81,8 @@ export async function testConnection(): Promise<{
   }
 }
 
-// Development-only: Test connection on startup
-if (isDevelopment) {
-  testConnection().then(result => {
-    if (!result.success) {
-      console.error("\n" + "=".repeat(60));
-      console.error("⚠️  DATABASE CONNECTION FAILED");
-      console.error("=".repeat(60));
-      console.error("To start your local database:");
-      console.error("  npm run dev:start  (recommended - includes database)");
-      console.error("  OR");
-      console.error("  npm run db:start   (starts PostgreSQL only)");
-      console.error("=".repeat(60) + "\n");
-    }
-  });
-}
+// Connection testing is now done on-demand in API routes, not at module load time
+// This prevents connection attempts during page loads and build-time
 
 // ========== GRACEFUL SHUTDOWN (Development only) ==========
 // In serverless/production, connections are managed per-request

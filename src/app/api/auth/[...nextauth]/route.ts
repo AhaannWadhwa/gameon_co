@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs";
 import { logError } from "@/lib/errors";
 
 // Do NOT export this
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
 
   providers: [
