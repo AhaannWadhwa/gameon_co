@@ -125,6 +125,24 @@ export const authOptions: NextAuthOptions = {
                 }
             }
 
+            // When update() is called (e.g., after onboarding), refresh token from database
+            if (trigger === "update" && token.email) {
+                const dbUser = await prisma.user.findUnique({
+                    where: { email: token.email as string },
+                    select: {
+                        id: true,
+                        role: true,
+                        onboardingCompleted: true,
+                    },
+                });
+
+                if (dbUser) {
+                    token.id = dbUser.id;
+                    token.role = dbUser.role;
+                    token.onboardingCompleted = dbUser.onboardingCompleted;
+                }
+            }
+
             return token;
         },
 

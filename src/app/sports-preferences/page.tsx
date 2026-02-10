@@ -36,9 +36,8 @@ export default function SportsPreferencesPage() {
       // Refresh the session to get updated onboardingCompleted flag
       await update();
 
-      // Redirect to dashboard after successful save
-      router.push("/dashboard");
-      router.refresh();
+      // Use hard redirect to ensure middleware reads the fresh token
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.message);
     } finally {
