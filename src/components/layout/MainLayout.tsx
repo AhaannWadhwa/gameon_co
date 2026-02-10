@@ -4,9 +4,10 @@ import { useState, ReactNode } from "react";
 import TopBar from "./TopBar";
 import LeftSidebar from "./LeftSidebar";
 import RightSidebar from "./RightSidebar";
+import FeedContainer from "@/components/feed/FeedContainer";
 
 interface MainLayoutProps {
-  children: ReactNode | ((view: "posts" | "events" | "people") => ReactNode);
+  children?: ReactNode;
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
@@ -24,7 +25,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
         {/* Center Feed */}
         <main className="flex-1 min-w-0">
-          {typeof children === 'function' ? children(activeView) : children}
+          <FeedContainer view={activeView} />
         </main>
 
         {/* Right Sidebar */}

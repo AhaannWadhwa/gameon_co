@@ -7,7 +7,7 @@ import SportsSelector from "@/components/onboarding/SportsSelector";
 
 export default function SportsPreferencesPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +32,9 @@ export default function SportsPreferencesPage() {
         const result = await response.json();
         throw new Error(result.message || "Failed to save preferences");
       }
+
+      // Refresh the session to get updated onboardingCompleted flag
+      await update();
 
       // Redirect to dashboard after successful save
       router.push("/dashboard");
@@ -70,11 +73,11 @@ export default function SportsPreferencesPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-gameon-blue-500 to-indigo-600 rounded-2xl mb-6 shadow-lg shadow-gameon-blue-500/30">
             <span className="text-3xl">🏆</span>
           </div>
-          
+
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
             What sports are you interested in?
           </h1>
-          
+
           <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
             Select your favorite sports to personalize your experience and connect with the right community
           </p>
@@ -91,7 +94,7 @@ export default function SportsPreferencesPage() {
 
         {/* Sports Selector */}
         <div className="mb-12">
-          <SportsSelector 
+          <SportsSelector
             onSelectionChange={setSelectedSports}
             initialSelection={selectedSports}
           />
@@ -105,10 +108,9 @@ export default function SportsPreferencesPage() {
             className={`
               w-full sm:w-auto px-8 py-4 rounded-xl font-semibold text-lg
               transition-all duration-200 flex items-center justify-center gap-2
-              ${
-                selectedSports.length === 0
-                  ? 'bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-gameon-blue-600 to-indigo-600 text-white shadow-lg shadow-gameon-blue-500/30 hover:shadow-xl hover:scale-105'
+              ${selectedSports.length === 0
+                ? 'bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-500 cursor-not-allowed'
+                : 'bg-gradient-to-r from-gameon-blue-600 to-indigo-600 text-white shadow-lg shadow-gameon-blue-500/30 hover:shadow-xl hover:scale-105'
               }
             `}
           >
